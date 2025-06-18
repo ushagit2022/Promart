@@ -1,0 +1,18 @@
+$grey : rgb(113, 117, 100);
+$black: #000;
+$white: rgb(218, 216, 216);
+$red:rgb(173, 10, 10);
+$green: rgb(54, 87, 54);
+
+$titleFont: Arial, Helvetica, sans-serif;
+$bodyFont: Times New Roman, Times, serif;
+
+@mixin buttunStyle($color, $fontSize){
+    width: 200px;
+    height: 40px;
+    background-color: $color;
+    color: $white;
+    border: none;
+    border-radius: 5px;
+    font-size: $fontSize;
+}

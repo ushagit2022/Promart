@@ -1,0 +1,147 @@
+
+
+.btnClass {
+  width: 100%;
+  height: 35px;
+  background-color: #eb571c;
+  margin-top: 2rem;
+  font-weight: 400;
+  color: white;
+  border: none;
+  outline: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.btnOrder {
+  width: 100%;
+  height: 40px;
+  background-color: rgb(232, 235, 236);
+  color: rgb(9, 142, 231);
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.OrderBtndiv {
+  padding-left: 30px;
+}
+
+.smallBtn {
+  width: 30px;
+  height: 35px;
+  color: rgb(14, 4, 4);
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.carouselSection {
+  background: #78b0e7;
+  border-radius: 20px;
+}
+
+.textCarousel {
+  color: azure;
+  padding-left: 30px;
+  font-size: 50px;
+  font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
+}
+
+.cart__left {
+  margin-left: 50px;
+  padding: 10px;
+}
+
+.cartCheckout {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  margin: 10px;
+}
+.cartCheckout span {
+  cursor: pointer;
+}
+
+.quantity-group {
+  background-color: #eb571c;
+}
+
+.plusMinus {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.columns {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.headings {
+  max-width: "90%";
+  margin: "2rem auto";
+}
+.headings h2 {
+  font-size: 40rem;
+  font-weight: 400;
+  text-align: center;
+}
+
+.products {
+  display: flex;
+  justify-content: space-between;
+  gap: 10;
+}
+
+.product {
+  border: "1px solid #ddd";
+  padding: 16;
+  width: 220;
+  border-radius: "8px";
+}
+
+.product img {
+  width: 50%;
+  height: 100;
+  margin-top: 1rem;
+  margin-left: auto;
+  margin-right: auto;
+  -o-object-fit: cover;
+     object-fit: cover;
+}
+
+.btnRemove {
+  width: 100%;
+  height: 40px;
+  color: rgb(232, 235, 236);
+  background-color: rgb(6, 30, 46);
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.checkoutDiv {
+  display: flex;
+}
+
+.checkouts {
+  display: flex;
+  justify-content: flex-end;
+  margin: 10px;
+  padding: 10px;
+}/*# sourceMappingURL=App.css.map */
+
+.custom-modal-body {
+  background-color: #7b94b9; /* Replace with your desired color */
+}
+
+.custom-modal .modal-content {
+  background-color: #8fb7f3; /* Replace with your desired color */
+}

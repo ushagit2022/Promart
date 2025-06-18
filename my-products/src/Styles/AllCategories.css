@@ -1,0 +1,13 @@
+.all-categories {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  font-size: 16px;
+  gap: 8px;
+  padding: 0 16px;
+  cursor: pointer;
+  color: #333;
+}
+.all-categories .categories-icon {
+  font-size: 20px;
+}/*# sourceMappingURL=AllCategories.css.map */
