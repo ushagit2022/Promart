@@ -2,6 +2,7 @@ import React from "react";
 import axios from 'axios';
 import { setProductsList, setCartItems} from "../store/productsReducer";
 import { setCategoriesList } from "../store/categoriesReducer";
+import {toast} from "react-toastify";
 
 
 const apiUrl = "http://127.0.0.1:5000"
@@ -175,13 +176,16 @@ console.log(typeof cartId,"cart from back ID", cartId)
   });
 };
 
-export const handleCheckout = async (cartItems, userId) => {
-  return await axios.post("/api/cart/checkout", {
+export const handleCheckoutApi =  (cartItems, userId) => async (dispatch) => {
+  return await axios.post(`${apiUrl}/cart/checkout`, {
       user_id: userId,
       items: cartItems, // [{ product_id, quantity, price }, ...]
     }).then((res) =>{
       console.log(res.data,"response with cart_id && cart_id");
-      return res.data && res.data;
+      toast.info(`${res.data.message} `,{
+                          position:"bottom-left"
+                       })
+      return res.data && res.data.cart_id;
     }).catch((err) =>{
        console.log(err)
     })
@@ -202,6 +206,44 @@ export const placeOrder = async (userId, total, paymentId, items) => {
     throw error;
   }
 };
+
+//to make the call for razorpay and open the razorpay popup, based on payment success call the orders api to update the db.
+export const handleRazorpayAndOrder = ({ userId, cartItems, total }) => async(dispatch) =>{
+  try {
+    // 1. Create Razorpay order
+    const razorpayRes = await axios.post(`${apiUrl}/api/razorpay_order`, {
+      amount: total * 100, // amount in paise
+    });
+
+    if (razorpayRes.data && razorpayRes.data.id) {
+      // 2. Open Razorpay checkout
+      const options = {
+        key: "YOUR_RAZORPAY_KEY_ID",
+        amount: razorpayRes.data.amount,
+        currency: razorpayRes.data.currency,
+        order_id: razorpayRes.data.id,
+        handler: async function (response) {
+          // 3. On payment success, create order in your DB
+          await axios.post("/api/orders", {
+            user_id: userId,
+            total: total,
+            payment_id: response.razorpay_payment_id,
+            items: cartItems,
+          });
+          alert("Order placed successfully!");
+        },
+        prefill: { name: "User", email: "user@example.com" },
+        theme: { color: "#3399cc" },
+      };
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } else {
+      alert("Failed to create Razorpay order.");
+    }
+  } catch (error) {
+    alert("Error: " + error.message);
+  }
+}
 
 // const handlePaymentSuccess = async () => {
 //   try {

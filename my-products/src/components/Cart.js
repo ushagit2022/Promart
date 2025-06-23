@@ -180,11 +180,11 @@ function Cart(props) {
                 <th>Total</th>
               </tr>
             </thead> */}
-                  <tbody>
+                  {/* <tbody> */}
                     {cart.cartItems?.map((product, index) => (
                       <CartItem product={product}></CartItem>
                     ))}
-                  </tbody>
+                  {/* </tbody> */}
 
 
                 </Table>

@@ -5,7 +5,7 @@ import ProductsCarousel from "./components/ProductsModule/ProductsCarousel";
 import ProductsList from "./components/ProductsModule/ProductsList";
 import Products from "./components/ProductsModule/Products";
 import "./Styles/App.css";
-import { getCategories, getProducts,getCartItems,addProductToCart,removeProductFromCart,addToCartApi } from "./actions/dbActions";
+import { getCategories, getProducts,getCartItems,addProductToCart,removeProductFromCart,addToCartApi,handleCheckoutApi,handleRazorpayAndOrder } from "./actions/dbActions";
 import { useDispatch, useSelector } from "react-redux";
 import Cart from "./components/Cart";
 import "react-toastify/dist/ReactToastify.css";
@@ -29,11 +29,13 @@ function App() {
   const [mobileModal, setMobileModal] = useState(false);
   const [phone, setPhone] = useState("");
   const [phoneError, setPhoneError] = useState("");
+  const [paymentPage, setpaymentPage] = useState(false);
 
   const productsData = useSelector((state) => state.products.productsList);
-  const cartItems = useSelector((state) => state.products.cartItems);
+  const cartItems = useSelector((state) => state.cart.cartItems);
   const loginUserId = useSelector((state) => state.products.loginUserId);
   const loginPhoneNumber = useSelector((state) => state.products.loginPhoneNumber);
+  const cartTotalAmount = useSelector((state) => state.cart.cartTotalAmount);
 
  
   let cartId = localStorage.getItem('cartId');
@@ -74,17 +76,17 @@ function App() {
   //   };
   // }, [cartPage]);
 
-  const refreshCart = async () => {
-    const items = await getCartItems(cartId);
-    setCartItemRef(items);
-  };
+//   const refreshCart = async () => {
+//     const items = await getCartItems(cartId);
+//     setCartItemRef(items);
+//   };
 
    // Fetch cart items when component mounts or cartId changes
-   useEffect(() => {
-    if(cartItems.length)
-{ refreshCart();
-}    
-  }, [cartId,]);
+//    useEffect(() => {
+//     if(cartItems.length)
+// { refreshCart();
+// }    
+//   }, [cartId,]);
 
   
 //   if (!cartId) {
@@ -168,19 +170,23 @@ if (cartId) {
     setSelectedProduct(product)
   }
 
-  const handleCheckout = () =>{
-    setCartPage(false);
-    setProductsHomePage(false);
-    setConfirmOrderPage(true);
-    
-  }
+//   const handleCheckout = () =>{
+//     setCartPage(false);
+//     setProductsHomePage(false);
+//     setConfirmOrderPage(true);
+//   }
   const handlePhoneNumber =(number) =>{
     dispatch(setLoginPhonenumber(number))
   }
 
   const handleCheckOut =() =>{
     console.log("Handle Checkout..")
+//   dispatch(handleCheckoutApi(cartItems,11)).then((cart_id) =>{
 
+    dispatch(handleRazorpayAndOrder(10,cartItems,cartTotalAmount)).then((data) =>{
+    console.log("cart_id")
+    // setpaymentPage(true);
+  });
     // dispatch(addToCartApi(cartItems,loginUserId));
   }
   

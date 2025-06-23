@@ -12,20 +12,17 @@ function CategoryNav(props) {
 
   return (
     <div className="category-nav">
-      {/* <div className="nav-categories"> */}
       <ul>
+        <li key="0">
         <AllCategories handleDisplayProduct={props.handleDisplayProduct}></AllCategories>
+        </li>
         {categoriesList && categoriesList.map((cat) => {
           return (
-            <>
               <li key={cat.id}> {cat.name}
               </li>
-            </>
           )
-
         })}
       </ul>
-      {/* </div> */}
     </div>
   );
 }

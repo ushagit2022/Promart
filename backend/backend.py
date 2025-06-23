@@ -2,6 +2,7 @@ from flask import Flask, jsonify,request
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+import razorpay
 
 app = Flask(__name__)
 CORS(app)
@@ -11,6 +12,14 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:root@localhost/pr
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+
+
+# Razorpay usage
+# Replace with your Razorpay API keys
+RAZORPAY_KEY_ID = 4444
+RAZORPAY_KEY_SECRET = 5555
+
+client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
 
 # Example Product model
 class Product(db.Model):
@@ -265,7 +274,7 @@ class CartItem(db.Model):
     
 # cart_bp = Blueprint('cart', __name__)
 
-@app.route('/api/cart/checkout', methods=['POST'])
+@app.route('/cart/checkout', methods=['POST'])
 def checkout():
     data = request.get_json()
     user_id = data['user_id']
@@ -286,7 +295,7 @@ def checkout():
         db.session.add(cart_item)
 
     db.session.commit()
-    return jsonify({"cart_id": new_cart.id})
+    return jsonify({"cart_id": new_cart.id,"message":"Cart Updated Successfully!"})
 
 # After payment success (e.g., in your payment webhook or callback handler):
 def handle_payment_success(user_id, cart_id, payment_id, total):
@@ -333,7 +342,7 @@ def handle_payment_success(user_id, cart_id, payment_id, total):
 
 # orders api 
 @app.route('/api/orders', methods=['POST'])
-def create_order():
+def create_order_db():
     data = request.get_json()
     user_id = data['user_id']
     total = data['total']
@@ -365,6 +374,18 @@ def create_order():
 
     db.session.commit()
     return jsonify({"order_id": order.id})
+
+
+@app.route('/api/razorpay_order', methods=['POST'])
+def create_order():
+    data = request.json
+    amount = data.get('amount')
+    razorpay_order = client.order.create({
+        "amount": amount,
+        "currency": "INR",
+        "payment_capture": 1
+    })
+    return jsonify(razorpay_order)
 
 
 if __name__ == '__main__': 
