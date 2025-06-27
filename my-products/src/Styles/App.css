@@ -1,4 +1,10 @@
+.custom-modal-body {
+  background-color: #7b94b9; /* Replace with your desired color */
+}
 
+.custom-modal .modal-content {
+  background-color: #8fb7f3; /* Replace with your desired color */
+}
 
 .btnClass {
   width: 100%;
@@ -136,12 +142,16 @@
   justify-content: flex-end;
   margin: 10px;
   padding: 10px;
+}
+
+.form-control {
+  min-height: calc(1.5em + 0.5rem + var(--bs-border-width) * 2);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  border-radius: var(--bs-border-radius-sm);
+  width: 250px;
+}
+
+.form-control {
+  width: 50%;
 }/*# sourceMappingURL=App.css.map */
-
-.custom-modal-body {
-  background-color: #7b94b9; /* Replace with your desired color */
-}
-
-.custom-modal .modal-content {
-  background-color: #8fb7f3; /* Replace with your desired color */
-}

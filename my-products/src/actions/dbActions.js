@@ -1,13 +1,28 @@
 import React from "react";
 import axios from 'axios';
 import { setProductsList, setCartItems} from "../store/productsReducer";
-import { setCategoriesList } from "../store/categoriesReducer";
+import { setCategoriesList,setSubCategoriesList } from "../store/categoriesReducer";
 import {toast} from "react-toastify";
 
 
 const apiUrl = "http://127.0.0.1:5000"
 
-export const gerLoginUserId = (name,email,is_admin,auth0_id,created_at) =>async(dispatch) =>{
+export const loginUser = (email,is_admin,mobile) =>async (dispatch) =>{
+  return axios.post(`${apiUrl}/api/login`, {
+    email,
+    // password,
+    is_admin,
+    mobile
+  }).then((res) =>{
+    console.log(res,"userId");
+    return res.data
+  }).catch((err) => {
+    // Optionally handle error (e.g., user already exists)
+    console.error(err);
+  });
+}
+
+export const getLoginUserId = (name,email,is_admin,auth0_id,created_at) =>async(dispatch) =>{
     return axios.post(`${apiUrl}/api/users`, {
         name,
         email,
@@ -22,6 +37,71 @@ export const gerLoginUserId = (name,email,is_admin,auth0_id,created_at) =>async(
         // Optionally handle error (e.g., user already exists)
         console.error(err);
       });
+}
+
+export const sendProducts = (productCreated) => async (dispatch) =>{
+  return axios.post(`${apiUrl}/product`,{
+    product :productCreated
+  }, 
+      {
+      headers: {
+        "Content-Type": "application/json",
+      },
+  }
+    ).then((res)=> {
+      // console.log(res.data,"data");
+     if(res.data) 
+      // dispatch(setProductsList(res.data));
+    console.log(res.data,"data from backend")
+     return res.data;
+
+    }).catch((err) =>{
+      console.log(err)
+    })
+}
+
+export const sendCategory = (catName) => async (dispatch) =>{
+  return axios.post(`${apiUrl}/category`,{
+    name: catName
+  }, 
+      {
+      headers: {
+        "Content-Type": "application/json",
+      },
+  }
+    ).then((res)=> {
+      // console.log(res.data,"data");
+     if(res.data) 
+      // dispatch(setProductsList(res.data));
+    console.log(res.data,"CAtegory from backend")
+     return res.data;
+
+    }).catch((err) =>{
+      console.log(err)
+    })
+}
+
+
+export const sendSubCategory = (subcatName,categoryId) => async (dispatch) =>{
+  return axios.post(`${apiUrl}/subcategory`,{
+    name:subcatName,
+    category_id:categoryId
+  }, 
+      {
+      headers: {
+        "Content-Type": "application/json",
+      },
+  }
+    ).then((res)=> {
+      // console.log(res.data,"data");
+     if(res.data) 
+      // dispatch(setProductsList(res.data));
+    console.log(res.data,"Sub Category from backend")
+     return res.data;
+
+    }).catch((err) =>{
+      console.log(err)
+    })
 }
 
 export const getProducts = () => async (dispatch) =>{
@@ -53,6 +133,21 @@ export const getCategories = () => async (dispatch) =>{
       }).catch((err) =>{
         console.log(err)
       })
+}
+// /api/
+
+export const getSubCategories = () => async (dispatch) =>{
+  return axios.get(`${apiUrl}/api/subcategorylist`,{}, 
+      {
+      headers: {
+        "Content-Type": "application/json",
+      },
+  }
+    ).then((res)=> {
+     if(res.data) dispatch(setSubCategoriesList(res.data));
+    }).catch((err) =>{
+      console.log(err)
+    })
 }
 
 // Add product to cart or increment quantity

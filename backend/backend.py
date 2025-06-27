@@ -21,60 +21,386 @@ RAZORPAY_KEY_SECRET = 5555
 
 client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
 
-# Example Product model
-class Product(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100))
-    price = db.Column(db.Float)
 
-# @app.route("/products", methods=['GET'])
-# def get_products():
-#     products = Product.query.all()
-#     result = [{"id": p.id, "name": p.name, "price": p.price} for p in products]
-#     return jsonify(result)
+class Product(db.Model):
+    __tablename__ = 'products'
+    id = db.Column(db.Integer, primary_key=True)
+    # subcategory_id = db.Column(db.Integer, db.ForeignKey('subcategories.id'))
+    name = db.Column(db.String, nullable=False)
+    description = db.Column(db.Text)
+    price = db.Column(db.Numeric(10,2), nullable=False)
+    image_url = db.Column(db.Text)
+    category_id = db.Column(db.Integer)
+    subcategory_id = db.Column(db.Integer)
+    stock = db.Column(db.Integer)
+
+@app.route("/product", methods=['POST'])
+def set_product():
+    data = request.json
+    productDetails = data.get('product', {})
+    name = productDetails.get('productName')
+    description = productDetails.get('productDescription')
+    price = productDetails.get('productPrice')
+    stock = productDetails.get('productStock')
+    image_url = productDetails.get("productImage")
+    category_id = productDetails.get("productCategory")
+    subcategory_id = productDetails.get("productSubcategory")
+
+    
+    # Basic validation
+    if not name or not price or not stock or not category_id:
+        return jsonify({'status': 'error', 'message': 'Missing required fields'}), 400
+    if not image_url or not (image_url.lower().endswith('.jpg') or image_url.lower().endswith('.jpeg')):
+        return jsonify({'status': 'error', 'message': 'Image must be a .jpg or .jpeg file'}), 400
+
+    productCreated = Product(
+        name=name,
+        description=description,
+        image_url=image_url,
+        price=price,
+        stock=stock,
+        category_id=category_id,
+        subcategory_id=subcategory_id if subcategory_id else None,
+        # created_at=datetime.utcnow()
+    )
+    db.session.add(productCreated)
+    db.session.commit()
+    return jsonify({'message': 'Successfully created new Product!', 'product_id': productCreated.id})
+
+# Product Get
+
+# to get the User details
+@app.route('/product', methods=['GET'])
+def get_product():
+    products = Product.query.all()
+    products_list = [
+        {
+            "id":p.id,
+            "name":p.name,
+            "description":p.description,
+            "image_url":p.image_url,
+            "price":p.price,
+            "stock":p.stock,
+            "category_id":p.category_id,
+            "subcategory_id":p.subcategory_id
+
+        }
+        for p in products
+    ]
+    return jsonify(products_list)
+
+# Product Put
+# editing api
+@app.route('/product/<int:product_id>', methods=['PUT'])
+def update_product(product_id):
+    data = request.json
+    product = Product.query.get(product_id)
+    if not product:
+        return jsonify({'status': 'error', 'message': 'Product not found'}), 404
+
+    product.name = data.get('name', product.name)
+    product.description = data.get('email', product.description)
+    product.price = data.get('mobile', product.price)
+    
+    product.stock = data.get('location', product.stock)
+    product.category = data.get('pincode', product.category)
+    # print(product.location,"product location",product.pincode,"Pincode")
+    product.subcategory = data.get('address', product.subcategory)
+    product.imimage_urlage = data.get('is_admin', product.image_url)
+    # product.created_at =  datetime.utcnow()
+
+    db.session.commit()
+
+    product_data = {
+        "id": product.id,
+        "name": product.name,
+        "description": product.description,
+        "price": product.price,
+        "stock": product.stock,
+        "category_id": product.category_id,
+        "image_url": product.image_url,
+        "subcategory_id": product.subcategory_id,
+        # "created_at": created_at
+    }
+    return jsonify(product_data)
+
+# Product Delete
+# to delete product 
+@app.route('/product/<int:product_id>', methods=['DELETE'])
+def delete_product(product_id):
+    product = Product.query.get(product_id)
+    if not product:
+        return jsonify({'success': False, 'error': 'User not found'}), 404
+      
+      # Delete related cart_items first
+    CartItem.query.filter_by(product_id=product_id).delete()
+    db.session.delete(product)
+    db.session.commit()
+
+    product_data = {
+        "id": product.id,
+        "name": product.name,
+        "description": product.description,
+        "price": product.price,
+        "stock": product.stock,
+        "category_id": product.category_id,
+        "image_url": product.image_url,
+        "subcategory_id": product.subcategory_id,
+        # "created_at": created_at
+    }
+    return jsonify(product_data)
+    # return jsonify({'success': True, 'message': f'User {user_id} deleted'})
+# ---end of Product--
 
 class User(db.Model):
     __tablename__ = 'users'  # Explicitly set table name
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
     email = db.Column(db.String)
+    mobile = db.Column(db.String, unique=True)  # <-- Add this line
     # password = db.Column(db.String)
     is_admin = db.Column(db.Boolean)
     created_at = db.Column(db.TIMESTAMP)
-    auth0_id = db.Column(db.String, unique=True) 
+    auth0_id = db.Column(db.String, unique=True)
+    location = db.Column(db.String) 
+    pincode = db.Column(db.String)
+    address =db.Column(db.String)
 
+# Auth user Authentication
+# @app.route('/api/users', methods=['POST'])
+# def sync_user():
+#     # if request.method == 'OPTIONS':
+#     #     print(request.json(),"request for users")
+#     #     return '', 200
+#     print(request,"request for users")
+#     data = request.json
+#     email = data.get('email')
+#     name = data.get('name')
+#     auth0_id = data.get('auth0_id')
+#     is_admin= data.get('is_admin')
+#     created_at = data.get("created_at")
+
+
+#     if not auth0_id or not email:
+#         return jsonify({'status': 'error', 'message': 'Missing auth0_id or email'}), 400
+
+#     user = User.query.filter_by(auth0_id=auth0_id).first()
+#     if not user:
+#         user = User(email=email, name=name, auth0_id=auth0_id, is_admin = is_admin,created_at = created_at)
+#         db.session.add(user)
+#         db.session.commit()
+#         return jsonify({'status': 'created', 'user_id': user.id})
+    
+    
+#     else:
+#         # Optionally update user info
+#         user.name = name
+#         user.email = email
+#         user.created_at = datetime.utcnow()
+#         db.session.commit()
+#         return jsonify({'status': 'updated', 'user_id': user.id})
+    
+# editing api
+@app.route('/api/users/<int:user_id>', methods=['PUT'])
+def update_user(user_id):
+    data = request.json
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'status': 'error', 'message': 'User not found'}), 404
+
+    user.name = data.get('name', user.name)
+    user.email = data.get('email', user.email)
+    user.mobile = data.get('mobile', user.mobile)
+    
+    user.location = data.get('location', user.location)
+    user.pincode = data.get('pincode', user.pincode)
+    # print(user.location,"user location",user.pincode,"Pincode")
+    user.address = data.get('address', user.address)
+    user.is_admin = data.get('is_admin', user.is_admin)
+    user.created_at =  datetime.utcnow()
+
+    db.session.commit()
+
+    user_data = {
+        "id": user.id,
+        "name": user.name,
+        "email": user.email,
+        "mobile": user.mobile,
+        "location": user.location,
+        "pincode": user.pincode,
+        "address": user.address,
+        "is_admin": user.is_admin,
+        # "created_at": created_at
+    }
+    return jsonify(user_data)
+
+# to delete user 
+
+@app.route('/api/users/<int:user_id>', methods=['DELETE'])
+def delete_user(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'success': False, 'error': 'User not found'}), 404
+
+    db.session.delete(user)
+    db.session.commit()
+
+    user_data = {
+        "id": user.id,
+        "name": user.name,
+        "email": user.email,
+        "mobile": user.mobile,
+        "location": user.location,
+        "pincode": user.pincode,
+        "address": user.address,
+        "is_admin": user.is_admin,
+        # "created_at": created_at
+    }
+    return jsonify(user_data)
+    # return jsonify({'success': True, 'message': f'User {user_id} deleted'})
+
+
+# to get the User details
+@app.route('/api/users', methods=['GET'])
+def get_users():
+    users = User.query.all()
+    users_list = [
+        {
+            "id": u.id,
+            "name": u.name,
+            "email": u.email,
+            "mobile": u.mobile,
+            "is_admin": u.is_admin,
+            "location": u.location,
+            "address" : u.address,
+            "pincode": u.pincode,
+
+
+            # "created_at": u.created_at,
+            # add other fields as needed
+        }
+        for u in users
+    ]
+    return jsonify(users_list)
+
+# checking the user email or mobile is exist then update the users table with that entry
 @app.route('/api/users', methods=['POST'])
 def sync_user():
-    # if request.method == 'OPTIONS':
-    #     print(request.json(),"request for users")
-    #     return '', 200
-    print(request,"request for users")
     data = request.json
     email = data.get('email')
     name = data.get('name')
-    auth0_id = data.get('auth0_id')
-    is_admin= data.get('is_admin')
+    mobile = data.get('mobile')
+    # auth0_id = data.get('auth0_id')
+    is_admin = data.get('is_admin')
     created_at = data.get("created_at")
 
+    # Check if user exists by email or mobile
+    user = None
+    if email:
+        user = User.query.filter_by(email=email).first()
+    if not user and mobile:
+        user = User.query.filter_by(mobile=mobile).first()
 
-    if not auth0_id or not email:
-        return jsonify({'status': 'error', 'message': 'Missing auth0_id or email'}), 400
-
-    user = User.query.filter_by(auth0_id=auth0_id).first()
-    if not user:
-        user = User(email=email, name=name, auth0_id=auth0_id, is_admin = is_admin,created_at = created_at)
+    if user:
+        # Update existing user
+        user.name = name or user.name
+        # user.auth0_id = auth0_id or user.auth0_id
+        user.is_admin = is_admin if is_admin is not None else user.is_admin
+        user.created_at = created_at or user.created_at
+        db.session.commit()
+        return jsonify({'status': 'updated', 'user_id': user.id})
+    else:
+        # Create new user
+        user = User(
+            email=email,
+            name=name,
+            mobile=mobile,
+            # auth0_id=auth0_id,
+            is_admin=is_admin,
+            created_at=created_at
+        )
         db.session.add(user)
         db.session.commit()
         return jsonify({'status': 'created', 'user_id': user.id})
-    
-    
-    else:
-        # Optionally update user info
-        user.name = name
-        user.email = email
+
+
+
+# Inserting the login details to user table when user click on login for the first time with new data(mobile number)
+# @app.route('/api/login', methods=['POST'])
+# def login_user():
+#     data = request.json
+#     mobile = data.get('mobile')
+#     email = data.get('email')
+#     # name = data.get('name')
+#     is_admin = data.get('is_admin', False)
+#     # created_at = datetime.utcnow()
+
+#     if not mobile:
+#         return jsonify({'status': 'error', 'message': 'Mobile number is required'}), 400
+
+#     # Check if user already exists by mobile
+#     user = User.query.filter_by(mobile=mobile).first()
+#     if user:
+#         # Optionally update name or admin status if needed
+#         # user.name = name or user.name
+#         user.email = email
+#         user.is_admin = is_admin if is_admin is not None else user.is_admin
+#         db.session.commit()
+#         return jsonify({'status': 'success', 'user_id': user.id, 'mobile': user.mobile, 'is_admin': user.is_admin})
+#     else:
+#         # Create new user
+#         user = User(
+#             mobile=mobile,
+#             email : email,
+#             # name=name,
+#             is_admin=is_admin,
+#             created_at=created_at
+#         )
+#         db.session.add(user)
+#         db.session.commit()
+#         return jsonify({'status': 'created', 'user_id': user.id, 'mobile': user.mobile, 'is_admin': user.is_admin})
+
+@app.route('/api/login', methods=['POST'])
+def login_user():
+    data = request.json
+    print(data,"data from react with mobile")
+    mobile = data.get('mobile')
+    email = data.get('email')
+    # name = data.get('name')
+    is_admin = data.get('is_admin', False)
+    created_at = datetime.utcnow()
+
+    if not mobile and not email:
+        return jsonify({'status': 'error', 'message': 'Mobile number or email is required'}), 400
+
+    # Check if user already exists by mobile or email
+    user = None
+    if mobile:
+        user = User.query.filter_by(mobile=mobile).first()
+    if not user and email:
+        user = User.query.filter_by(email=email).first()
+
+    if user:
+        # Optionally update name, email, or admin status if needed
+        # user.name = name or user.name
+        user.email = email or user.email
+        user.mobile = mobile or user.mobile
+        user.is_admin = is_admin if is_admin is not None else user.is_admin
         db.session.commit()
-        return jsonify({'status': 'updated', 'user_id': user.id})
-    
+        return jsonify({'status': "success","messsage":'Successfully Updated the details !', 'user_id': user.id, 'mobile': user.mobile, 'email': user.email, 'is_admin': user.is_admin})
+    else:
+        # Create new user
+        user = User(
+            mobile=mobile,
+            email=email,
+            # name=name,
+            is_admin=is_admin,
+            created_at=created_at
+        )
+        db.session.add(user)
+        db.session.commit()
+        return jsonify({'status': "created","message": 'Successfully Created new User Details!', 'user_id': user.id, 'mobile': user.mobile, 'email': user.email, 'is_admin': user.is_admin})
+
 @app.route('/api/validate-email', methods=['POST'])
 def validate_email():
     data = request.json
@@ -85,15 +411,17 @@ def validate_email():
         exists = user is not None
     return jsonify({'exists': exists})
 
-class Product(db.Model):
-    __tablename__ = 'products'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, nullable=False)
-    description = db.Column(db.Text)
-    price = db.Column(db.Numeric(10,2), nullable=False)
-    image_url = db.Column(db.Text)
-    category_id = db.Column(db.Integer)
-    stock = db.Column(db.Integer)
+# class Product(db.Model):
+#     __tablename__ = 'products'
+#     id = db.Column(db.Integer, primary_key=True)
+#     # subcategory_id = db.Column(db.Integer, db.ForeignKey('subcategories.id'))
+#     name = db.Column(db.String, nullable=False)
+#     description = db.Column(db.Text)
+#     price = db.Column(db.Numeric(10,2), nullable=False)
+#     image_url = db.Column(db.Text)
+#     category_id = db.Column(db.Integer)
+#     subcategory_id = db.Column(db.Integer)
+#     stock = db.Column(db.Integer)
 
 @app.route('/api/productslist', methods=['GET'])
 def get_products():
@@ -106,6 +434,7 @@ def get_products():
             'price': float(p.price),
             'image_url': p.image_url,
             'category_id': p.category_id,
+            'subcategory_id':p.subcategory_id,
             'stock': p.stock
         }
         for p in products
@@ -116,6 +445,18 @@ class Category(db.Model):
     __tablename__ = 'categories'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
+
+@app.route('/category',methods=['POST'])
+def send_category():
+    data = request.get_json()
+    name = data.get('name')
+
+    categoryCreated = Category(
+        name=name,
+    )
+    db.session.add(categoryCreated)
+    db.session.commit()
+    return jsonify({'message': 'New Category is created Successfully!', 'category_id': categoryCreated.id})
     
 
 @app.route('/api/categorylist',methods=['GET'])
@@ -125,6 +466,37 @@ def get_categories():
         'id': c.id,
         'name':c.name
     } for c in categories
+    ]
+    return jsonify(result) 
+
+class Subcategory(db.Model):
+    __tablename__ = 'subcategories'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=False)
+    category_id = db.Column(db.String,foriegn_key =True )
+
+@app.route('/subcategory',methods=['POST'])
+def send_subcategory():
+    data = request.get_json()
+    name = data.get('name')
+    category_id =data.get('category_id')
+
+    subcategoryCreated = Subcategory(
+        name=name,
+        category_id = category_id
+    )
+    db.session.add(subcategoryCreated)
+    db.session.commit()
+    return jsonify({'message': 'New Sub Category is created Successfully!', 'category_id': subcategoryCreated.id})
+
+@app.route('/api/subcategorylist',methods=['GET'])
+def get_subcategories():
+    subcategories = Subcategory.query.all()
+    result = [{
+        'id': c.id,
+        'name':c.name,
+        'category_id': c.category_id
+    } for c in subcategories
     ]
     return jsonify(result) 
 

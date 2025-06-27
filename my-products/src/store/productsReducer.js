@@ -1,6 +1,7 @@
 import {createSlice} from '@reduxjs/toolkit';
 
 const initialState = {
+// sendProduct:{},
 productsList:[],
 cartProductsCountIncrement:[],
 // cart: [],

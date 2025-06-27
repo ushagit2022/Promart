@@ -5,7 +5,7 @@ import ProductsCarousel from "./components/ProductsModule/ProductsCarousel";
 import ProductsList from "./components/ProductsModule/ProductsList";
 import Products from "./components/ProductsModule/Products";
 import "./Styles/App.css";
-import { getCategories, getProducts,getCartItems,addProductToCart,removeProductFromCart,addToCartApi,handleCheckoutApi,handleRazorpayAndOrder } from "./actions/dbActions";
+import { getCategories,getSubCategories, getProducts,getCartItems,addProductToCart,removeProductFromCart,addToCartApi,handleCheckoutApi,handleRazorpayAndOrder } from "./actions/dbActions";
 import { useDispatch, useSelector } from "react-redux";
 import Cart from "./components/Cart";
 import "react-toastify/dist/ReactToastify.css";
@@ -19,6 +19,10 @@ import Modal from 'react-bootstrap/Modal';
 import CloseIcon from '@mui/icons-material/Close';
 // import ConfirmOrder from './ConfirmOrder';
 import InputGroup from 'react-bootstrap/InputGroup';
+import ProductsManage from "./components/Admin/ProductsManage";
+import CategoryManage from "./components/Admin/CategoryManage";
+import SubcategoryManage from "./components/Admin/SubcategoryManagement";
+import UserManagement from "./components/Admin/UserManagement";
 
 function App() {
   const [cartPage, setCartPage] = useState(false);
@@ -58,6 +62,7 @@ function App() {
     // console.log(categoriesList,"categoriesList");
     dispatch(getProducts())
     dispatch(getCategories())
+    dispatch(getSubCategories())
   }, [dispatch]);
 
   // useEffect(() => {
@@ -116,8 +121,6 @@ if (cartId) {
     // });
     dispatch(removeProductFromCart(productId))
   };
-
-
 
   // Simple validation: checks for 10 digits (Indian mobile format)
   const validatePhone = (num) => {
@@ -287,9 +290,13 @@ if (cartId) {
         <ProductsCarousel></ProductsCarousel>
       </div>
       <ProductsList products={productsData} 
-      // addToCart={addToCart} 
       cartItems={cartItems} removeFromCart={decrementFromCart}
       ></ProductsList>
+
+       {/* <ProductsManage></ProductsManage> */}
+      {/* <CategoryManage></CategoryManage>
+      <SubcategoryManage></SubcategoryManage> */}
+      {/* <UserManagement></UserManagement> */}
       </>
     ) : (cartPage && !productsHomePage) ?(
 

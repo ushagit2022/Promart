@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import '../Styles/NavBar.css';
 import { FaUser, FaMapMarkerAlt, FaShoppingCart } from "react-icons/fa";
 // import Authentication from "./Users/Authentication";
+import Login from "./Users/Login";
 import ProductLogo from "../images/logo3.png";
 import GeoLocation from '../components/GeoLocation';
 import Badge from '@mui/joy/Badge';
@@ -11,9 +12,12 @@ import { colors } from "@mui/material";
 import MailIcon from '@mui/icons-material/Mail';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { useSelector } from "react-redux";
+import Button from "react-bootstrap/esm/Button";
+import LoginModal from "./Users/LoginModal";
 
 function NavBar({viewCart}) {
-    const [loggedIn, setLoggedIn] = useState(false);
+    const [user, setUser] = useState("");
+    const [loginModal,setLoginModal] = useState(false);
    const cartItems= useSelector((state)=>state.cart.cartItems)
    const cartQuantity = useSelector((state)=>state.cart.cartTotalQantity);
 
@@ -25,13 +29,18 @@ function NavBar({viewCart}) {
 //     return total
 //   }
 
-    const handleLogin = () => {
+    const handleLoginClick = (userData) => {
         // Simulate login logic
-        setLoggedIn(true);
-        //   setLoggedInAuth(true)
+        // setUser(userData);
+          setLoginModal(true)
         // Redirect to another page after login
         //   window.location.href = "/dashboard"; // Change "/dashboard" to your desired page
     };
+    const handleLogin = (userData) =>{
+        setUser(userData);
+        setLoginModal(false)
+    }
+
     return (
         <header className="navbar">
             <div className="logo"><img src={ProductLogo} alt="Logo" style={{ width: "80px", height: "80px" }}></img></div>
@@ -39,8 +48,20 @@ function NavBar({viewCart}) {
                 <input type="text" placeholder="Search..." />
             </div>
             <nav className="links">
-                <a ><FaMapMarkerAlt /> </a>
+                <a ><FaMapMarkerAlt /></a>
                 <a><GeoLocation></GeoLocation></a>
+                {loginModal && (
+                    // <Login onLogin={handleLogin} />
+                    <LoginModal show={loginModal} onClose={()=>setLoginModal(false)} onLogin={handleLogin}> </LoginModal>
+                )}
+                {!user  ? (
+        
+        <Button size="sm" variant="primary" onClick ={handleLoginClick}>Login</Button>
+      ) : (
+     <>          <h6>Welcome, {user.name || user.mobile || localStorage.getItem("Mobile") || "User"}</h6>
+          {/* Render dashboard or other components here */}
+          </>
+      )}
                 {/* <Authentication></Authentication> */}
                 {/* <a href="/cart" style={{ border: "1px black" }}> */}
                     <Badge badgeContent=
